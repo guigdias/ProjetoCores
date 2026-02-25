@@ -1,0 +1,144 @@
+async: método assíncrono
+- Pode demorar a terminar, não bloqueia a aplicação então espera
+- Importante em API, pois as requisições podem demorar.
+- Se não for assincrona, a thread fica parada esperando, fazendo com que a API aguente menos requisições, piorando a performance.
+
+Task: Retorno dos métodos async
+- Task, quando não retorna valor
+- Task<T>, quando retorna valor
+
+await: Faz com que espere a operação terminar, para não bloquear a thread
+
+"Ordem para métodos"
+
+Repository -> Service -> Controller
+ReplaceOne no Mongo = Put
+UpdateOne no Mongo = Patch
+
+===========================================================================
+Método de Conversão:
+Passar o objeto cor por parametro
+
+Cor convertida = Cor sem conversão / 255 (valor maximo)
+K (preto) = 1 - Valor máximo (cores convertidas)
+
+Se K for = 1, todas as cores do cmyk são 0, menos o próprio K
+
+Cyan = (1 - VermelhoConvertido - K) / (1-K)
+Magenta = (1 - VerdeConvertido - K) / (1-K)
+Yellow = (1 - AzulConvertido - K) / (1-K)
+K = K
+=============================================================================
+Pesquisar/Aplicar:
+
+- Separation of concerns
+- DTOS
+- Separação entre projetos, no caso ProjetoCores.API | ProjetoCores.Domain | ProjetoCores.Infra
+- A camada Domain, não pode ter "conhecimento" das outras, por ser o Core da aplicação
+===============================================================================
+
+Separation of Concerns: Separação de responsabilidades - princípio SOLID. Cada parte do sistema deve ter uma responsabilidade única bem definida.
+
+Problemas: O mesmo Model está na entrada e saída da API, regras de negócio, etc.
+* Se o banco for alterado, o contrato da API é quebrado
+* Se a API for alterada, a persistência é quebrada.
+
+- Separar o Projeto em:
+ProjetoCores (Solução)
+|-> ProjetoCores.API
+|-> ProjetoCores.Domain
+|-> ProjetoCres.Infrastructure
+
+Domain: Coração do Sistema
+- Entidades
+- Interfaces
+- Regras de Negócio(Service)
+
+Infrastructure: Detalhes Técnicos
+- MongoDB
+- Repositórios
+- Configuração de Banco
+- Implementação de Interfaces
+
+API: Requisições e Dados
+- Controllers
+- DTOs
+- Configurações do ASP.NET
+- Injeção de dependência
+- Swagger
+
+API -> Domain
+API -> Infrastructure
+Infrastructure -> Domain
+
+Ordem "correta" de criação: Domain - Infrastructure - API
+
+DDD - Domain Driven Design
+Entidade anêmica: Modelo que não possuí nenhum comportamento, apenas propriedades.
+Entidade rica: Possuí comportamentos e propriedades.
+=====================================================================================
+
+DDD:
+- Entidades com comportamento
+- Lógica "encapsulada"
+- Regras não espalhadas nos services
+- O service de domínio só existe quando envolve várias entidades
+
+Domain
+|-Entities
+|     |- Color.cs -> Entidade rica, com comportamentos 
+|
+|- Interfaces
+|     | - IColorRepository.cs
+|
+| - Services
+|     | - ColorService.cs
+
+Infrastructure
+| - Repositories
+|	|-MongoRepository
+|
+| - Configurations
+|       |- MongoConfig
+
+Api
+|- Controllers
+|       |-ColorController
+|
+|- DTOs
+|   |- UpdateColorDto
+|   |- CreateColorDto
+|
+
+Domain -> Não conhece framework
+Infrastructure -> Não conhece Mongo
+Api -> Conhece apenas HTTP
+
+Fluxo de dados (Exemplo Post:)
+
+1 - Cliente chama a API
+2- Controller recebe DTO, valida o formato, chama o Service (não sabe nada de Mongo, e não realiza nenhum calculo)
+3- Service: Cria a entidade, de acordo com os valores recebidos por parâmetro, caso esteja correto, chama o repository (Não sabe nada de mongo)
+4- Repository: Executa a implementação do repository na infrastructure (Conhece o mongo, e suas funcionalidades)
+
+Comandos uteis usados:
+
+dotnet run
+dotnet build
+dotnet run --Project NomedoProjeto.AppHost
+dotnet add NomeDoProjeto reference NomeDoProjeto2
+
+Depois de criar o AppHost, e utilizar os comandos, dentro do ProgramCs dele, ou AppHost.Cs, adicionar um builder do ProgramCs "principal" no caso da API
+
+builder.AddProject<Projects.NomedoProjeto>("textodeescolha");
+
+Dentro do ProgramCs principal
+builder.Services.AddSingleton<IMongoClient>(sp =>
+{
+    var configuration = sp.GetRequiredService<IConfiguration>();
+    var connectionString = configuration.GetConnectionString("mongo");
+    return new MongoClient(connectionString);
+});
+
+- Subir o projeto para o GitHub
+1- Na pasta raiz: git init
