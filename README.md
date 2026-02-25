@@ -52,8 +52,6 @@ Api
 1. Install .NET 8 SDK
 2. Install Docker Desktop
 3. Run:
-
-```bash
 dotnet run --project ProjetoCores.AppHost
 
 4. Get the localhost URL via PowerShellDeveloper
