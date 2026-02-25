@@ -56,7 +56,7 @@ Api
 ```bash
 dotnet run --project ProjetoCores.AppHost
 
-4- Get the localhost URL via PowerShellDeveloper
-5- Access the URL, run API, use click the URL to open in a new Tab
-6- At the new Tab, add to the URL: /swagger for Interface
+4. Get the localhost URL via PowerShellDeveloper
+5. Access the URL, run API, use click the URL to open in a new Tab
+6. At the new Tab, add to the URL: /swagger for Interface
 
