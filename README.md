@@ -14,7 +14,7 @@ Distributed REST API built with modern .NET technologies, following Domain-Drive
 - Domain-Driven Design (DDD)
 - Dependency Injection
 - Clean Architecture Principles
-
+- Fluent Validation
 ---
 
 ## Architecture Overview
@@ -46,9 +46,20 @@ AppHost (Aspire)
     │   └── ColorController.cs
     │
     └── DTOs
-        ├── CreateColorDto.cs
-        └── UpdateColorDto.cs
-```
+    │    ├── CreateColorDto.cs
+    │    └── UpdateColorDto.cs
+    │    └── MergeColorsDto.cs
+    └── Validators
+         │
+         └──Messages
+         │     ├── ColorErrorMessages.cs
+         │
+         ├── ColorValidator.Cs
+         ├── CreateColorDtoValidator.cs
+         ├── UpdateColorDtoValidator.cs
+
+
+```      
 
 ---
 
@@ -77,6 +88,7 @@ AppHost (Aspire)
 - Handles request/response mapping via DTOs
 - Depends on Domain services
 - Does not contain business logic
+- Fluent Validation messages and rule validations
 
 ---
 
@@ -144,6 +156,7 @@ docker ps
 - Separation of Concerns
 - Infrastructure isolated from Domain
 - DTOs prevent direct exposure of domain entities
+- Unit tests to avoid invalid inputs
 
 ---
 
