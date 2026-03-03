@@ -26,6 +26,16 @@ public class ColorRepository : IColorRepository
     {
         return await _collection.Find(c => c.Id == id).FirstOrDefaultAsync(); // filtro com expressão lambda, para encontra pelo ID
     }
+    public async Task<Color?> GetByIdAsync(string id)
+    {
+        return await _collection.Find(c => c.Id == id).FirstOrDefaultAsync();
+    }
+    public async Task<List<Color>> GetByIdsAsync(List<string> ids)
+    {
+        return await _collection.
+        Find(c => ids.Contains(c.Id))
+        .ToListAsync();
+    }
     public async Task<bool> Update(Color color)
     {
         var result = await _collection.ReplaceOneAsync(
@@ -38,5 +48,9 @@ public class ColorRepository : IColorRepository
     {
         var result = await _collection.DeleteOneAsync(c => c.Id == id); // filtro com expressão lambda, para encontra pelo ID
         return result.DeletedCount > 0; // verifica se foi atualizado
+    }
+    public async Task<int> CountMergedAsync()
+    {
+        return (int) await _collection.CountDocumentsAsync(c => c.IsMerged);
     }
 }

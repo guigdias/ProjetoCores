@@ -1,14 +1,21 @@
 using MongoDB.Driver;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using ProjetoCores.Domain.Interfaces;
 using ProjetoCores.Domain.Services;
 using ProjetoCores.Infrastructure.Configurations;
 using ProjetoCores.Infrastructure.Repositories;
+using ProjetoCores.Api.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder.Services.AddValidatorsFromAssemblyContaining<ColorValidator>();
+builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddControllers();
+
+
 
 // Aspire Connection
 builder.Services.AddSingleton<IMongoClient>(sp =>

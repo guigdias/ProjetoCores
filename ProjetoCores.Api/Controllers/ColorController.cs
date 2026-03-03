@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ProjetoCores.Domain.Services;
 using ProjetoCores.Api.DTOs;
+using FluentValidation;
 
 namespace ProjetoCores.Controllers;
 
@@ -16,44 +17,89 @@ public class ColorController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Post(CreateColorDto dto)
+    public async Task<IActionResult> Post([FromBody] CreateColorDto dto)
     {
-        var color = await _colorService.Create(dto.Name, dto.Red, dto.Green, dto.Blue);
+        try
+        {
+            var color = await _colorService.Create(dto.Name, dto.Hex);
 
-        return CreatedAtAction(nameof(GetById), new { id = color.Id }, color);
+            return CreatedAtAction(nameof(GetById), new { id = color.Id }, color); // 201
+        }
+        catch (ValidationException ex)
+        {
+            return BadRequest(ex.Errors); // 400
+        }
+        catch(ArgumentException ex)
+        {
+            return BadRequest(ex.Message); // 400
+        }
     }
 
     [HttpGet]
     public async Task<IActionResult> Get()
     {
         var colors = await _colorService.GetAll();
-        return Ok(colors);
+        return Ok(colors); // 200
     }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(string id)
     {
-        var color = await _colorService.FindById(id);
-
-        if (color == null) return NotFound();
-        return Ok(color);
+        try
+        {
+            var color = await _colorService.FindById(id);
+            return Ok(color); // 200
+        }
+        catch(KeyNotFoundException)
+        {
+            return NotFound(); // 404
+        }
     }
 
     [HttpPut("{id}")]
-    public async Task <IActionResult> Put(string id, UpdateColorDto dto)
+    public async Task <IActionResult> Put(string id, [FromBody] UpdateColorDto dto)
     {
-        var newColor = await _colorService.Update(id, dto.Name, dto.Red, dto.Green, dto.Blue);
-            
-        if(!newColor) return NotFound();
-        return NoContent();
+        try 
+        {
+            var newColor = await _colorService.Update(id, dto.Name, dto.Hex);
+            return NoContent(); // 204
+        }
+        catch(KeyNotFoundException)
+        {
+            return NotFound(); // 404
+        }
+        catch(ValidationException ex)
+        {
+            return BadRequest(ex.Errors);
+        }
+        catch(ArgumentException ex)
+        {
+            return BadRequest(ex.Message); // 400
+        }
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(string id)
     {
         var deleted = await _colorService.Delete(id);
+            if(!deleted)
+                return NotFound(); // 404
 
-        if (!deleted) return NotFound();
-        return NoContent();
+        return NoContent(); // 204
+    }
+
+    [HttpPost("merge")]
+    public async Task <IActionResult> Merge(MergeColorsDto dto)
+    {
+        try 
+        {
+            var MergedColor = await _colorService.MergeColors(dto.colorsIds);
+            return CreatedAtAction(nameof(GetById), new { Id = MergedColor.Id }, MergedColor);
+        }
+        catch(ValidationException ex)
+        {
+            return BadRequest(ex.Errors);
+        }
+        
     }
 }
