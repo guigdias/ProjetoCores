@@ -20,7 +20,7 @@ public class ColorService
 
         var color = new Color(name, r, g, b);
 
-        Validate(color);
+        _validator.ValidateAndThrow(color);
 
         await _repository.Create(color);
 
@@ -48,7 +48,7 @@ public class ColorService
 
         color.Update(name, r, g, b);
 
-        Validate(color);
+        _validator.ValidateAndThrow(color);
 
         await _repository.Update(color);
 
@@ -63,19 +63,20 @@ public class ColorService
         var colors = await _repository.GetByIdsAsync(colorsIds);
         if (colors.Count < 2)
             throw new ValidationException("At least 2 colors are required");
+        if (colors.Count != colorsIds.Count)
+            throw new ValidationException("One or more valid colors are missing");
 
         var mergedCount = await _repository.CountMergedAsync();
         var mergedName = $"Merged{mergedCount + 1}";
         var mergedColor = Color.CreateMergedColor(mergedName, colors);
 
-        Validate(mergedColor);
+        _validator.ValidateAndThrow(mergedColor);
 
         await _repository.Create(mergedColor);
 
         return mergedColor;
       
     }
-
     private (int r, int g, int b) ConvertHexToRgb(string hex)
     {
         try 
@@ -86,21 +87,12 @@ public class ColorService
             var b = Convert.ToInt32(hex.Substring(4, 2), 16); // B corresponderá as posições (4,5)
 
             // Parametro 16 significa para interpretar o numero como base hexadecimal
-
             return (r, g, b);
         }
         catch
         {
             throw new ArgumentException("Invalid Hex Format");
         }
-        
-    }
-    private void Validate(Color color)
-    {
-        var result = _validator.Validate(color);
-
-        if (!result.IsValid)
-            throw new ValidationException(result.Errors);
     }
 
 }

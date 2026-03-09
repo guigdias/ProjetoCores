@@ -1,0 +1,276 @@
+async: método assíncrono
+- Pode demorar a terminar, não bloqueia a aplicação então espera
+- Importante em API, pois as requisições podem demorar.
+- Se não for assincrona, a thread fica parada esperando, fazendo com que a API aguente menos requisições, piorando a performance.
+
+Task: Retorno dos métodos async
+- Task, quando não retorna valor
+- Task<T>, quando retorna valor
+
+await: Faz com que espere a operação terminar, para não bloquear a thread
+
+"Ordem para métodos"
+
+Repository -> Service -> Controller
+ReplaceOne no Mongo = Put
+UpdateOne no Mongo = Patch
+
+===========================================================================
+Método de Conversão:
+Passar o objeto cor por parametro
+
+Cor convertida = Cor sem conversão / 255 (valor maximo)
+K (preto) = 1 - Valor máximo (cores convertidas)
+
+Se K for = 1, todas as cores do cmyk são 0, menos o próprio K
+
+Cyan = (1 - VermelhoConvertido - K) / (1-K)
+Magenta = (1 - VerdeConvertido - K) / (1-K)
+Yellow = (1 - AzulConvertido - K) / (1-K)
+K = K
+
+=============================================================================
+Pesquisar/Aplicar:
+
+- Separation of concerns
+- DTOS
+- Separação entre projetos, no caso ProjetoCores.API | ProjetoCores.Domain | ProjetoCores.Infra
+- A camada Domain, não pode ter "conhecimento" das outras, por ser o Core da aplicação
+===============================================================================
+
+Separation of Concerns: Separação de responsabilidades - princípio SOLID. Cada parte do sistema deve ter uma responsabilidade única bem definida.
+
+Problemas: O mesmo Model está na entrada e saída da API, regras de negócio, etc.
+* Se o banco for alterado, o contrato da API é quebrado
+* Se a API for alterada, a persistência é quebrada.
+
+- Separar o Projeto em:
+ProjetoCores (Solução)
+|-> ProjetoCores.API
+|-> ProjetoCores.Domain
+|-> ProjetoCres.Infrastructure
+
+Domain: Coração do Sistema
+- Entidades
+- Interfaces
+- Regras de Negócio(Service)
+
+Infrastructure: Detalhes Técnicos
+- MongoDB
+- Repositórios
+- Configuração de Banco
+- Implementação de Interfaces
+
+API: Requisições e Dados
+- Controllers
+- DTOs
+- Configurações do ASP.NET
+- Injeção de dependência
+- Swagger
+
+API -> Domain
+API -> Infrastructure
+Infrastructure -> Domain
+
+Ordem "correta" de criação: Domain - Infrastructure - API
+
+DDD - Domain Driven Design
+Entidade anêmica: Modelo que não possuí nenhum comportamento, apenas propriedades.
+Entidade rica: Possuí comportamentos e propriedades.
+=====================================================================================
+
+DDD:
+- Entidades com comportamento
+- Lógica "encapsulada"
+- Regras não espalhadas nos services
+- O service de domínio só existe quando envolve várias entidades
+
+Domain
+|-Entities
+|     |- Color.cs -> Entidade rica, com comportamentos 
+|
+|- Interfaces
+|     | - IColorRepository.cs
+|
+| - Services
+|     | - ColorService.cs
+
+Infrastructure
+| - Repositories
+|	|-MongoRepository
+|
+| - Configurations
+|       |- MongoConfig
+
+Api
+|- Controllers
+|       |-ColorController
+|
+|- DTOs
+|   |- UpdateColorDto
+|   |- CreateColorDto
+|   |- MergeColorDto
+|
+
+Domain -> Não conhece framework
+Infrastructure -> Não conhece Mongo
+Api -> Conhece apenas HTTP
+
+Fluxo de dados (Exemplo Post:)
+
+1 - Cliente chama a API
+2- Controller recebe DTO, valida o formato, chama o Service (não sabe nada de Mongo, e não realiza nenhum calculo)
+3- Service: Cria a entidade, de acordo com os valores recebidos por parâmetro, caso esteja correto, chama o repository (Não sabe nada de mongo)
+4- Repository: Executa a implementação do repository na infrastructure (Conhece o mongo, e suas funcionalidades)
+
+Comandos uteis usados:
+
+dotnet run
+dotnet build
+dotnet run --Project NomedoProjeto.AppHost
+dotnet add NomeDoProjeto reference NomeDoProjeto2
+
+Depois de criar o AppHost, e utilizar os comandos, dentro do ProgramCs dele, ou AppHost.Cs, adicionar um builder do ProgramCs "principal" no caso da API
+
+builder.AddProject<Projects.NomedoProjeto>("textodeescolha");
+
+Dentro do ProgramCs principal
+builder.Services.AddSingleton<IMongoClient>(sp =>
+{
+    var configuration = sp.GetRequiredService<IConfiguration>();
+    var connectionString = configuration.GetConnectionString("mongo");
+    return new MongoClient(connectionString);
+});
+
+- Subir o projeto para o GitHub
+1- Na pasta raiz: git init
+2- git config --global user.email "email"
+   git config --global user.name "Nome"
+3- dotnet new gitignore
+4- git add.
+5- git commit -m "Texto de commit"
+6- git remote add origin URL_REPOSITORIO
+7- git branch -M main
+8- git push -u origin main
+
+Próximos passos:
+- IsMerged
+- SourceColorsId
+- Fluent Validation
+
+===============================================================================================================
+
+Mesclagem de Cores:
+
+- Criado um novo construtor na Entidade, que recebe mais atributos do que o 
+construtor de criação de cor sem mesclagem.
+MergedColor = new Color(nome rgb)
+MergedColor calcula cmyk
+IsMerged = true
+SourceColorsId = sourcecolorsids
+return mergedcolor
+
+- Sem alteração na inteface do repositório
+
+- Criado método para buscar ids, no repositório, mas com uma lista de string 
+(ids) passada por parâmetro
+
+- Criado um método Merge no service, com uma lista de string (ids) passada por
+parâmetro
+
+variável de lista de cores = método novo criado no service(lista passada por parâmetro)
+
+RGB Mesclados = conversão para int lista.Average(variável => variável.RGB)
+nome "Merged + contagem" = $"Merged{variavelIDEstatica}";
+
+variável(c, m, y, k) = Método de Conversão Criado no Service(RGB Mesclados)
+
+variável Cor Mesclada = Entidade(Possível pois o Service pode conhecer a entidade).Construtor de Mesclagem()
+
+await _repositor.Create(variável Cor Mesclada)
+
+Variável Id Estatica++;
+
+return variável Cor Mesclada
+
+================================================================================================================
+
+Fluent Validation:
+
+- Fazer testes unitários e validações no projeto
+- Validar os DTOs da API
+dotnet add package FluentValidation.AspnetCore
+
+Criação de validators
+
+utilizar o using da pasta/classe que será herdade
+: abstractValidator<ClasseHerdada>
+
+Para clean code, utilizar uma classe para as mensagens de erro é uma boa prática
+
+Criar Construtor da classe de validação
+RuleFor(variável => variável.Atributo a ser validado).Validações().WithMessage(Classe com Mensagens.String de Mensagem)
+
+==========================================================================================================================
+
+Fazer: 
+Método de conversão do CMYK igual o do RGB (somar e tirar a media) ?
+A request é uma string, o rgb vai vir como hexadecimal(Ok)
+retornar o valor como hexadecimal(Ok)
+Ver representação padrão do CMYK (?)
+NotEmpty do FluentValidation já possui uma mensagem padrão (OK)
+Fazer validação de domínio(entidade), e não do dto (OK)
+
+-> Apenas um arquivo com mensagens de erro e um validador (ok)
+
+** 
+Criado o Hex na entidade
+Valor padrão do Hex: RRGGBB
+public string Hex => $"#{Red:X2}{Green:X2}{Blue:X2}";
+X: Valor Hexadecimal , 2: Sempre 2 digitos
+Criado o método de converter Hex para RGB no service, e o Hex em si não é armazenado no banco.
+var r = Convert.ToInt32((hex.Substring(0, 2), 16)); // R corresponderá aos 2 primeiros caracteres da string (0,1)
+var g = Convert.ToInt32((hex.Substring(2, 2), 16)); // G corresponderá as posições (2,3)
+var b = Convert.ToInt32((hex.Substring(4, 2), 16)); // B corresponderá as posições (4,5)
+
+O método Create, recebe agora apenas uma string name e o hex como parâmetro
+
+ var (r, g, b) = ConvertHexToRgb(hex); função de conversão chamada na primeira linha
+
+O método Update, recebe um id, um name, e um hex como parâmetro
+
+Métodos de retorno HTTP:
+
+200 OK:
+Operação deu certo - Retorno de Dados
+
+201 Created:
+- Criou novo recurso
+
+204 No Content:
+Operação deu certo, não precisa retornar nada
+
+400 Bad Request:
+Dados inválidos, validação falhou, formato errado
+
+404 Not Found:
+Recurso não existe
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

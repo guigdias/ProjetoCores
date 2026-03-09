@@ -23,10 +23,5 @@ public class ColorValidator : AbstractValidator<Color>
         .NotNull()
         .InclusiveBetween(0, 255).WithMessage(ColorErrorMessages.InvalidBlue);
 
-        RuleFor(x => x.SourceColorsId)
-        .Must(list => list.Count >= 2)
-        .When(x => x.IsMerged)
-        .WithMessage(ColorErrorMessages.MergeListTooShort);
-
     }
 }

@@ -10,6 +10,9 @@ using ProjetoCores.Api.Validators;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddValidatorsFromAssemblyContaining<ColorValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<MergeColorsDtoValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<CreateColorDtoValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<UpdateColorDtoValidator>();
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

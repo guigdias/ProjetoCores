@@ -9,8 +9,6 @@ public class Color
     [BsonRepresentation(BsonType.ObjectId)]
     public string? Id { get; private set; }
     public string Name { get; private set; }
-    [BsonIgnore]
-    public string Hex => $"#{Red:X2}{Green:X2}{Blue:X2}"; // X: Valor Hexadecimal , 2: Sempre 2 digitos
     public int Red { get; private set; }
     public int Green { get; private set; }
     public int Blue { get; private set; }
