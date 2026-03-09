@@ -108,6 +108,7 @@ AppHost (Aspire)
 - List all colors
 - Get color by ID
 - RGB validation
+- Color Merge
 - Automatic RGB → CMYK conversion
 - MongoDB container managed by Aspire
 
