@@ -41,23 +41,26 @@ AppHost (Aspire)
 │   └── Configurations
 │       └── MongoConfig.cs
 │
-└── Api
-    ├── Controllers
-    │   └── ColorController.cs
-    │
-    └── DTOs
-    │    ├── CreateColorDto.cs
-    │    └── UpdateColorDto.cs
-    │    └── MergeColorsDto.cs
-    └── Validators
-         │
-         └──Messages
-         │     ├── ColorErrorMessages.cs
-         │
-         ├── ColorValidator.Cs
-         ├── CreateColorDtoValidator.cs
-         ├── UpdateColorDtoValidator.cs
-
+├── Api
+│    ├── Controllers
+│    │   └── ColorController.cs
+│    │
+│    └── DTOs
+│    │    ├── CreateColorDto.cs
+│    │    └── UpdateColorDto.cs
+│    │    └── MergeColorsDto.cs
+│    └── Validators
+│         │    └──Messages
+│         │          └─ ColorErrorMessages.cs
+│         ├── ColorValidator.Cs
+│         ├── CreateColorDtoValidator.cs
+│         ├── UpdateColorDtoValidator.cs
+│         ├── MergeColorsDtoValidator.cs
+│
+├──Tests
+│     └──Services
+│            └──ColorServiceTests.cs
+│
 
 ```      
 
@@ -89,6 +92,11 @@ AppHost (Aspire)
 - Depends on Domain services
 - Does not contain business logic
 - Fluent Validation messages and rule validations
+
+### Tests
+- Unit Tests
+- Using Nsubstitute
+- Testing core rules from ColorService, and using Validations.
 
 ---
 
