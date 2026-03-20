@@ -1,0 +1,30 @@
+info:
+  name: create-invalid-hex
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: https://localhost:7294/api/color
+  body:
+    type: json
+    data: |-
+      {
+        "name": "Blue",
+        "hex": "INVALID"
+      }
+  auth: inherit
+
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "400"
+    - expression: res.body
+      operator: isDefined
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

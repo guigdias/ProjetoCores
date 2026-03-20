@@ -1,0 +1,38 @@
+info:
+  name: merge-colors.bru
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: https://localhost:7294/api/color/merge
+  body:
+    type: json
+    data: |-
+      {
+        "colorsIds": [
+          "69a6236b6e55fc15b04173c3",
+          "69a61f51570d7312c88d4d62"
+        ]
+      }
+  auth: inherit
+
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "201"
+    - expression: res.body.id
+      operator: isDefined
+    - expression: res.body.red
+      operator: eq
+      value: "127"
+    - expression: res.body.blue
+      operator: eq
+      value: "127"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

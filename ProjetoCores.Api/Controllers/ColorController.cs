@@ -1,8 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ProjetoCores.Domain.Services;
 using ProjetoCores.Api.DTOs;
-using ProjetoCores.Api.Mappers;
+using AutoMapper;
 using FluentValidation;
+using Microsoft.AspNetCore.JsonPatch;
 
 namespace ProjetoCores.Controllers;
 
@@ -11,10 +12,12 @@ namespace ProjetoCores.Controllers;
 public class ColorController : ControllerBase
 {
     private readonly ColorService _colorService;
+    private readonly IMapper _mapper;
 
-    public ColorController(ColorService colorService)
+    public ColorController(ColorService colorService, IMapper mapper)
     {
         _colorService = colorService;
+        _mapper = mapper;
     }
     [HttpPost]
     public async Task<IActionResult> Post([FromBody] CreateColorDto dto)
@@ -23,7 +26,7 @@ public class ColorController : ControllerBase
         {
             var color = await _colorService.Create(dto.Name, dto.Hex);
 
-            return CreatedAtAction(nameof(GetById), new { id = color.Id }, ColorMapper.ToResponseDto(color)); // 201
+            return CreatedAtAction(nameof(GetById), new { id = color.Id }, _mapper.Map<ColorResponseDto>(color)); // 201
         }
         catch (ValidationException ex)
         {
@@ -35,7 +38,7 @@ public class ColorController : ControllerBase
     {
         var colors = await _colorService.GetAll();
 
-        var response = colors.Select(ColorMapper.ToResponseDto);
+        var response = _mapper.Map<IEnumerable<ColorResponseDto>>(colors);
 
         return Ok(response); // 200
     }
@@ -46,22 +49,54 @@ public class ColorController : ControllerBase
         if (color == null)
             return NotFound();
 
-        return Ok(ColorMapper.ToResponseDto(color));
+        return Ok(_mapper.Map<ColorResponseDto>(color));
     }
     [HttpPut("{id}")]
     public async Task <IActionResult> Put(string id, [FromBody] UpdateColorDto dto)
     {
         try 
         {
-            var newColor = await _colorService.Update(id, dto.Name, dto.Hex);
-            if(newColor == null)
-                return NotFound();
+            await _colorService.UpdateFromHex(id, dto.Hex);
 
             return NoContent(); // 204
         }
         catch(ValidationException ex)
         {
             return BadRequest(ex.Errors); // 400
+        }
+        catch(Exception)
+        {
+            return NotFound(); // 404
+        }
+    }
+    [HttpPatch("{id}")]
+    public async Task<IActionResult> Patch(string id, [FromBody] JsonPatchDocument<UpdateColorDto> patchDoc)
+    {
+        if (patchDoc == null)
+            return BadRequest();
+
+        try
+        {
+            var color = await _colorService.FindById(id);
+                if(color == null)
+                    return NotFound();
+
+            var dto = new UpdateColorDto
+            {
+                Name = color.Name,
+                Hex = $"#{color.Red:X2}{color.Green:X2}{color.Blue:X2}"
+            };
+
+            patchDoc.ApplyTo(dto);
+
+            var result = await _colorService.UpdateFromHex(id, dto.Hex);
+
+            return Ok(result);
+        }
+
+        catch (ValidationException ex)
+        {
+            return BadRequest(ex.Errors);
         }
     }
     [HttpDelete("{id}")]
@@ -78,8 +113,8 @@ public class ColorController : ControllerBase
     {
         try 
         {
-            var MergedColor = await _colorService.MergeColors(dto.colorsIds);
-            return CreatedAtAction(nameof(GetById), new { Id = MergedColor.Id }, ColorMapper.ToResponseDto(MergedColor));
+            var mergedColor = await _colorService.MergeColors(dto.colorsIds);
+            return CreatedAtAction(nameof(GetById), new { id = mergedColor.Id },_mapper.Map<ColorResponseDto>(mergedColor));
         }
         catch(ValidationException ex)
         {

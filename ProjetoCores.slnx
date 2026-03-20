@@ -2,9 +2,9 @@
   <Folder Name="/Itens de Solução/">
     <File Path="README.md" />
   </Folder>
-  <Project Path="../../../../../../../../dev/ProjetoCores.Api/ProjetoCores.Api.csproj" />
-  <Project Path="../../../../../../../../dev/ProjetoCores.AppHost/ProjetoCores.AppHost.csproj" />
-  <Project Path="../../../../../../../../dev/ProjetoCores.Domain/ProjetoCores.Domain.csproj" />
-  <Project Path="../../../../../../../../dev/ProjetoCores.Infrastructure/ProjetoCores.Infrastructure.csproj" />
+  <Project Path="ProjetoCores.Api/ProjetoCores.Api.csproj" />
+  <Project Path="ProjetoCores.AppHost/ProjetoCores.AppHost.csproj" />
+  <Project Path="ProjetoCores.Domain/ProjetoCores.Domain.csproj" />
+  <Project Path="ProjetoCores.Infrastructure/ProjetoCores.Infrastructure.csproj" />
   <Project Path="ProjetoCores.Tests/ProjetoCores.Tests.csproj" />
 </Solution>

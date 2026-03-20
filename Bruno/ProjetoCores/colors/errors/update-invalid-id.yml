@@ -1,0 +1,31 @@
+info:
+  name: update-invalid-id
+  type: http
+  seq: 3
+
+http:
+  method: PUT
+  url: https://localhost:7294/api/color/123
+  body:
+    type: json
+    data: |-
+      PUT /api/color/123
+      {
+        "name": "Test",
+        "hex": "#FFFFFF"
+      }
+  auth: inherit
+
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "404"
+    - expression: res.body
+      operator: isDefined
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

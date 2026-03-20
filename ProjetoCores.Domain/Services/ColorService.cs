@@ -13,42 +13,31 @@ public class ColorService
         _repository = repository;
         _validator = validator;
     }
-
     public async Task<Color> Create(string name, string hex)
     {
-       var (r, g, b) = ConvertHexToRgb(hex);
+        var color = Color.CreateColorFromHex(name, hex);
 
-        var color = new Color(name, r, g, b);
-
-        _validator.ValidateAndThrow(color);
+        _validator.Validate(color);
 
         await _repository.Create(color);
 
         return color;
     }
-
     public Task<List<Color>> GetAll() => _repository.GetAll();
 
     public async Task<Color?> FindById(string id)
     {
         var color = await _repository.GetById(id);
-        if (color is null)
-            throw new KeyNotFoundException("Color not found");
-
+      
         return color;
     }
-
-    public async Task<Color> Update(string id, string name, string hex)
+    public async Task<Color?> UpdateFromHex(string id, string hex)
     {
         var color = await _repository.GetById(id);
-        if (color is null)
-            throw new KeyNotFoundException("Color not found");
+            if (color == null)
+                return null;
 
-        var (r, g, b) = ConvertHexToRgb(hex);
-
-        color.Update(name, r, g, b);
-
-        _validator.ValidateAndThrow(color);
+        color.UpdateColorFromHex(hex);
 
         await _repository.Update(color);
 
@@ -58,7 +47,7 @@ public class ColorService
 
     public Task<bool> Delete(string id) => _repository.Delete(id);
 
-    public async Task<Color> MergeColors(List<string> colorsIds)
+    public async Task<Color> MergeColors(List<string?> colorsIds)
     {
         var colors = await _repository.GetByIdsAsync(colorsIds);
         if (colors.Count < 2)
@@ -76,23 +65,6 @@ public class ColorService
 
         return mergedColor;
       
-    }
-    private (int r, int g, int b) ConvertHexToRgb(string hex)
-    {
-        try 
-        {
-            hex = hex.Replace("#", ""); // substituir # por um espaço em branco
-            var r = Convert.ToInt32(hex.Substring(0, 2), 16); // R corresponderá aos 2 primeiros caracteres da string (0,1)
-            var g = Convert.ToInt32(hex.Substring(2, 2), 16); // G corresponderá as posições (2,3)
-            var b = Convert.ToInt32(hex.Substring(4, 2), 16); // B corresponderá as posições (4,5)
-
-            // Parametro 16 significa para interpretar o numero como base hexadecimal
-            return (r, g, b);
-        }
-        catch
-        {
-            throw new ArgumentException("Invalid Hex Format");
-        }
     }
 
 }

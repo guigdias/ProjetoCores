@@ -1,6 +1,6 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
-
+using ProjetoCores.Domain.Entities;
 namespace ProjetoCores.Domain.Entities;
 
 public class Color
@@ -33,7 +33,29 @@ public class Color
         UpdatedAt = DateTime.UtcNow;
         IsMerged = false;
     }
-    
+
+    // Método de criação
+    public static Color CreateColorFromHex(string name, string hex)
+    {
+        var rgb = ConvertHexToRgb(hex);
+
+        return new Color(name, rgb.Red, rgb.Green, rgb.Blue);
+    }
+
+    // Método para atualização
+    public void UpdateColorFromHex(string hex)
+    {
+        if (string.IsNullOrWhiteSpace(hex))
+            throw new ArgumentException("Invalid Hex");
+
+        var rgb = ConvertHexToRgb(hex);
+
+        Red = rgb.Red;
+        Green = rgb.Green;
+        Blue = rgb.Blue;
+        CalculateCmyk();
+        UpdatedAt = DateTime.UtcNow;
+    }
     // Construtor da Cor Mesclada
 
     public static Color CreateMergedColor(string name, IEnumerable<Color> sourceColors)
@@ -55,16 +77,6 @@ public class Color
         return mergedColor;
     }
 
-    // Método para atualização
-    public void Update(string name, int red, int green, int blue)
-    {
-        Name = name;
-        Red = red;
-        Green = green;
-        Blue = blue;
-        CalculateCmyk();
-        UpdatedAt = DateTime.UtcNow;
-    }
     private void CalculateCmyk()
     {
         if (Red == 0 && Green == 0 && Blue == 0)
@@ -85,4 +97,17 @@ public class Color
         Magenta = Math.Round((1 - ConertedGreen - Key) / (1 - Key), 4);
         Yellow = Math.Round((1 - ConvertedBlue - Key) / (1 - Key), 4);
     }
- }
+
+    private static RgbColor ConvertHexToRgb(string hex)
+    {
+        hex = hex.Replace("#", ""); // substituir # por um espaço em branco
+
+        return new RgbColor
+        {
+           Red = Convert.ToInt32(hex.Substring(0, 2), 16),
+           Green = Convert.ToInt32(hex.Substring(2, 2), 16),
+           Blue = Convert.ToInt32(hex.Substring(4, 2), 16)
+        };
+
+    }
+}

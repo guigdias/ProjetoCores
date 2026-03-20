@@ -30,7 +30,7 @@ public class ColorRepository : IColorRepository
     {
         return await _collection.Find(c => c.Id == id).FirstOrDefaultAsync();
     }
-    public async Task<List<Color>> GetByIdsAsync(List<string> ids)
+    public async Task<List<Color>> GetByIdsAsync(List<string?> ids)
     {
         return await _collection.
         Find(c => ids.Contains(c.Id))

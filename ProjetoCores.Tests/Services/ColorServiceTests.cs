@@ -96,7 +96,7 @@ public class ColorServiceTests
         _repositoryMock.GetById("1")
         .Returns((Color?)null);
 
-        Func<Task> act = async () => await _service.Update("1", "Blue", "#0000FF");
+        Func<Task> act = async () => await _service.UpdateFromHex("1", "#0000FF");
 
         await act.Should().ThrowAsync<KeyNotFoundException>();
     }
@@ -112,10 +112,9 @@ public class ColorServiceTests
         _validatorMock.Validate(Arg.Any<Color>())
         .Returns(new FluentValidation.Results.ValidationResult());
 
-        var newName = "LightBlue";
         var newHex = "#ADD8E6";
 
-        await _service.Update("1", newName, newHex);
+        await _service.UpdateFromHex("1", newHex);
 
         await _repositoryMock.Received(1)
         .Update(Arg.Is<Color>(
@@ -127,6 +126,45 @@ public class ColorServiceTests
     }
 
     [Fact]
+    public async Task Update_WhenOnlyNameChanges_ShouldUpdateName()
+    {
+        // Arrange
+        var color = new Color("Blue", 0, 0, 255);
+
+        _repositoryMock.GetById("1").Returns(color);
+
+        _validatorMock.Validate(Arg.Any<Color>())
+            .Returns(new ValidationResult());
+
+        // Act
+        await _service.UpdateFromHex("1", "#0000FF");
+
+        // Assert
+        await _repositoryMock.Received(1)
+            .Update(Arg.Is<Color>(c => c.Name == "NewBlue"));
+    }
+
+    [Fact]
+    public async Task Update_WhenHexChanges_ShouldConvertAndUpdateRgb()
+    {
+        var color = new Color("Blue", 0, 0, 255);
+
+        _repositoryMock.GetById("1").Returns(color);
+
+        _validatorMock.Validate(Arg.Any<Color>())
+            .Returns(new ValidationResult());
+
+        await _service.UpdateFromHex("1", "#FF0000");
+
+        await _repositoryMock.Received(1)
+            .Update(Arg.Is<Color>(c =>
+                c.Red == 255 &&
+                c.Green == 0 &&
+                c.Blue == 0
+            ));
+    }
+
+    [Fact]
     public async Task DeleteColor_WhenColorExists_ShouldReturnTrue()
     {
         _repositoryMock.Delete("1")
@@ -135,6 +173,18 @@ public class ColorServiceTests
         var result = await _service.Delete("1");
 
         result.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task DeleteColor_ShouldCallRepositoryDelete()
+    {
+        _repositoryMock.Delete("1")
+            .Returns(true);
+
+        await _service.Delete("1");
+
+        await _repositoryMock.Received(1)
+            .Delete("1");
     }
 
     [Fact]
@@ -155,10 +205,10 @@ public class ColorServiceTests
         var red = new Color("Red", 255, 0, 0); // cor criada
         var colors = new List<Color> { red }; // lista de cores criadas
 
-        _repositoryMock.GetByIdsAsync(Arg.Any<List<string>>()) // Quando o método GetByIdsAsync for chamado, retorne a lista de cores criada
+        _repositoryMock.GetByIdsAsync(Arg.Any<List<string?>>()) // Quando o método GetByIdsAsync for chamado, retorne a lista de cores criada
         .Returns(colors); // Quando o método GetByIdsAsync for chamado, retorne a lista de cores criada
 
-        var ids = new List<string> { "8605831c28069aab13782ace" }; // Id fictício para a cor
+        var ids = new List<string?> { "8605831c28069aab13782ace" }; // Id fictício para a cor
 
         //Act
         Func<Task> act = async () => await _service.MergeColors(ids); // Tentar mesclar as cores usando o método MergeColors
@@ -174,10 +224,10 @@ public class ColorServiceTests
         var red = new Color("Red", 255, 0, 0); // Cor criada
         var colors = new List<Color> { red }; // Lista de cores, pois assim que está definido no service
 
-        _repositoryMock.GetByIdsAsync(Arg.Any<List<string>>()) // Quando o método GetByIdsAsync for chamado, retorne a lista de cores criada
+        _repositoryMock.GetByIdsAsync(Arg.Any<List<string?>>()) // Quando o método GetByIdsAsync for chamado, retorne a lista de cores criada
         .Returns(colors); // Quando o método GetByIdsAsync for chamado, retorne a lista de cores criada
 
-        var ids = new List<string> { "8605831c28069aab13782ace", "71922517a85dfb28edf81e35" }; // passados 2 ids, com apenas uma cor criada
+        var ids = new List<string?> { "8605831c28069aab13782ace", "71922517a85dfb28edf81e35" }; // passados 2 ids, com apenas uma cor criada
 
         //Act
         Func<Task> act = async () => await _service.MergeColors(ids); // Tentar mesclar as cores usando o método MergeColors
@@ -194,7 +244,7 @@ public class ColorServiceTests
         var green = new Color("Green", 0, 255, 0);
         var colors = new List<Color> { red, green }; // Lista de cores criadas
 
-        _repositoryMock.GetByIdsAsync(Arg.Any<List<string>>())
+        _repositoryMock.GetByIdsAsync(Arg.Any<List<string?>>())
         .Returns(colors); // Procurar os ids das cores criadas
 
         _repositoryMock.CountMergedAsync()
@@ -206,7 +256,7 @@ public class ColorServiceTests
         _validatorMock.Validate(Arg.Any<Color>())
          .Returns(new ValidationResult());// Validação
 
-        var ids = new List<string> { "640acc334d0d70c2865a5aef", "76a711db19e7ac37f7184acd" }; // ids válidos
+        var ids = new List<string?> { "640acc334d0d70c2865a5aef", "76a711db19e7ac37f7184acd" }; // ids válidos
 
         //Act
         var result = await _service.MergeColors(ids); // Chamada método de merge
@@ -224,7 +274,7 @@ public class ColorServiceTests
         var blue = new Color("Blue", 0, 0, 255);
         var colors = new List<Color> { red, blue }; // Lista de cores, pois assim que está definido no service
 
-        _repositoryMock.GetByIdsAsync(Arg.Any<List<string>>()) // Quando o método GetByIdsAsync for chamado, retorne a lista de cores criada
+        _repositoryMock.GetByIdsAsync(Arg.Any<List<string?>>()) // Quando o método GetByIdsAsync for chamado, retorne a lista de cores criada
         .Returns(colors);
 
         _repositoryMock.CountMergedAsync().Returns(0); // Quando o método CountMergedAsync for chamado, retorne 0, indicando que ainda não existem cores mescladas
@@ -235,7 +285,7 @@ public class ColorServiceTests
         _validatorMock.Validate(Arg.Any<Color>())
         .Returns(new ValidationResult()); // Quando o método Validate for chamado, retorne um resultado de validação bem-sucedido
 
-        var ids = new List<string> { "71922517a85dfb28edf81e35", "8605831c28069aab13782ace" }; // Ids fictícios para as cores
+        var ids = new List<string?> { "71922517a85dfb28edf81e35", "8605831c28069aab13782ace" }; // Ids fictícios para as cores
 
         //Act
         var result = await _service.MergeColors(ids); // Mesclar as cores e obter o resultado

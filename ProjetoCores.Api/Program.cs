@@ -15,9 +15,10 @@ builder.Services.AddValidatorsFromAssemblyContaining<CreateColorDtoValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<UpdateColorDtoValidator>();
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
-
+builder.Services.AddControllers().AddNewtonsoftJson();
 
 
 // Aspire Connection
@@ -42,7 +43,11 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "API v1");
+        options.RoutePrefix = string.Empty;
+    });
 }
 
 app.UseHttpsRedirection();

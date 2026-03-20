@@ -2,6 +2,6 @@
 {
     public class MergeColorsDto
     {
-        public List<string> colorsIds { get; set; } = new();
+        public List<string?> colorsIds { get; set; } = new();
     }
 }

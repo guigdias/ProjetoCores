@@ -1,0 +1,40 @@
+info:
+  name: create-color.bru
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: https://localhost:7294/api/color
+  body:
+    type: json
+    data: |-
+      {
+        "name": "Green Bruno",
+        "hex": "#00FF00"
+      }
+  auth: inherit
+
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "201"
+    - expression: res.body.name
+      operator: eq
+      value: Green Bruno
+    - expression: res.body.green
+      operator: eq
+      value: "255"
+    - expression: res.body.red
+      operator: eq
+      value: "0"
+    - expression: res.body.blue
+      operator: eq
+      value: "0"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,34 @@
+info:
+  name: patch-color
+  type: http
+  seq: 4
+
+http:
+  method: PATCH
+  url: https://localhost:7294/api/color/69b98ed6a579400c9a868e01
+  headers:
+    - name: Content-Type
+      value: application/json-patch+json
+  body:
+    type: json
+    data: |-
+      [
+        {
+          "op": "replace",
+          "path": "/name",
+          "value": "PatchedGreenColor"
+        }
+      ]
+  auth: inherit
+
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "204"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

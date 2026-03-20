@@ -169,9 +169,6 @@ docker ps
 ---
 
 ## Future Improvements
-
-- Unit tests (xUnit / FluentAssertions)
-- Integration tests
 - CI/CD with GitHub Actions
 - Docker Compose production profile
 - Kubernetes deployment
