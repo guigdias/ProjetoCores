@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using ProjetoCores.Domain.Entities;
 using ProjetoCores.Domain.Interfaces;
+using ProjetoCores.Domain.Exceptions;
 namespace ProjetoCores.Domain.Services;
 
 public class ColorService
@@ -31,17 +32,23 @@ public class ColorService
       
         return color;
     }
-    public async Task<Color?> UpdateFromHex(string id, string hex)
+
+    public async Task<Color> GetColorOrThrow(string id)
     {
         var color = await _repository.GetById(id);
-            if (color == null)
-                return null;
+
+        if(color == null)
+        throw new NotFoundException("Color not found");
+
+        return color;
+    }
+    public async Task UpdateFromHex(string id, string hex)
+    {
+        var color = await GetColorOrThrow(id);
 
         color.UpdateColorFromHex(hex);
 
         await _repository.Update(color);
-
-        return color;
 
     }
 

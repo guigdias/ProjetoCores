@@ -11,15 +11,15 @@ public class ColorValidator : AbstractValidator<Color>
         RuleFor(x => x.Name)
         .NotEmpty();
 
-        RuleFor(x => x.Red)
+        RuleFor(x => x.Rgb.Red)
         .NotNull()
         .InclusiveBetween(0, 255).WithMessage(ColorErrorMessages.InvalidRed);
 
-        RuleFor(x => x.Green)
+        RuleFor(x => x.Rgb.Green)
         .NotNull()
         .InclusiveBetween(0, 255).WithMessage(ColorErrorMessages.InvalidGreen);
 
-        RuleFor(x => x.Blue)
+        RuleFor(x => x.Rgb.Blue)
         .NotNull()
         .InclusiveBetween(0, 255).WithMessage(ColorErrorMessages.InvalidBlue);
 

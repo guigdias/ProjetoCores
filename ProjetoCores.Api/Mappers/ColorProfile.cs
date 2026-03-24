@@ -10,6 +10,6 @@ public class ColorProfile : Profile
     {
         CreateMap<Color, ColorResponseDto>()
             .ForMember(dest => dest.Hex,
-                opt => opt.MapFrom(src => $"#{src.Red:X2}{src.Green:X2}{src.Blue:X2}"));
+                opt => opt.MapFrom(src => $"#{src.Rgb.Red:X2}{src.Rgb.Green:X2}{src.Rgb.Blue:X2}"));
     }
 }

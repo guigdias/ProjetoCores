@@ -4,6 +4,7 @@ using ProjetoCores.Api.DTOs;
 using AutoMapper;
 using FluentValidation;
 using Microsoft.AspNetCore.JsonPatch;
+using ProjetoCores.Domain.Exceptions;
 
 namespace ProjetoCores.Controllers;
 
@@ -84,19 +85,19 @@ public class ColorController : ControllerBase
             var dto = new UpdateColorDto
             {
                 Name = color.Name,
-                Hex = $"#{color.Red:X2}{color.Green:X2}{color.Blue:X2}"
+                Hex = $"#{color.Rgb.Red:X2}{color.Rgb.Green:X2}{color.Rgb.Blue:X2}"
             };
 
             patchDoc.ApplyTo(dto);
 
-            var result = await _colorService.UpdateFromHex(id, dto.Hex);
+            await _colorService.UpdateFromHex(id, dto.Hex);
 
-            return Ok(result);
+            return NoContent();
         }
 
-        catch (ValidationException ex)
+        catch (NotFoundException)
         {
-            return BadRequest(ex.Errors);
+            return NotFound();
         }
     }
     [HttpDelete("{id}")]

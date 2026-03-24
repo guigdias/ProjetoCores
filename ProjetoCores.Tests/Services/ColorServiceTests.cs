@@ -64,17 +64,17 @@ public class ColorServiceTests
         var result = await _service.Create(name, hex);
 
         //Assert
-        result.Red.Should().Be(0);
-        result.Green.Should().Be(0);
-        result.Blue.Should().Be(255);
+        result.Rgb.Red.Should().Be(0);
+        result.Rgb.Green.Should().Be(0);
+        result.Rgb.Blue.Should().Be(255);
     }
 
     [Fact]
     public async Task FindById_WhenSendTheCorrectId_ShouldNotBeNull()
     {
         //Arrange
-        var color = new Color("Blue", 0, 0, 255);
-
+        var blue = new RgbColor(0, 0, 255);
+        var color = new Color("Blue", blue);
         _repositoryMock.GetById("1") // Se o método GetById for acionado, procurando pelo Id 1, retorne a cor criada
         .Returns(color);
 
@@ -84,9 +84,9 @@ public class ColorServiceTests
         //Assert
         result.Should().NotBeNull();
         result.Name.Should().Be("Blue");
-        result.Red.Should().Be(0);
-        result.Green.Should().Be(0);
-        result.Blue.Should().Be(255);
+        result.Rgb.Red.Should().Be(0);
+        result.Rgb.Green.Should().Be(0);
+        result.Rgb.Blue.Should().Be(255);
 
     }
 
@@ -104,8 +104,8 @@ public class ColorServiceTests
     [Fact]
     public async Task UpdateColor_WhenColorExists_ShouldUpdateColor()
     {
-        var color = new Color("OldBlue", 0, 0, 255);
-
+        var blue = new RgbColor(0, 0, 255);
+        var color = new Color("Blue", blue);
         _repositoryMock.GetById("1")
         .Returns(color);
 
@@ -119,9 +119,9 @@ public class ColorServiceTests
         await _repositoryMock.Received(1)
         .Update(Arg.Is<Color>(
          c => c.Name == "LightBlue" 
-         && c.Red == 173 
-         && c.Green == 216 
-         && c.Blue == 230)
+         && c.Rgb.Red == 173 
+         && c.Rgb.Green == 216 
+         && c.Rgb.Blue == 230)
         );
     }
 
@@ -129,8 +129,8 @@ public class ColorServiceTests
     public async Task Update_WhenOnlyNameChanges_ShouldUpdateName()
     {
         // Arrange
-        var color = new Color("Blue", 0, 0, 255);
-
+        var blue = new RgbColor(0, 0, 255);
+        var color = new Color("Blue", blue);
         _repositoryMock.GetById("1").Returns(color);
 
         _validatorMock.Validate(Arg.Any<Color>())
@@ -147,8 +147,8 @@ public class ColorServiceTests
     [Fact]
     public async Task Update_WhenHexChanges_ShouldConvertAndUpdateRgb()
     {
-        var color = new Color("Blue", 0, 0, 255);
-
+        var blue = new RgbColor(0, 0, 255);
+        var color = new Color("Blue", blue);
         _repositoryMock.GetById("1").Returns(color);
 
         _validatorMock.Validate(Arg.Any<Color>())
@@ -158,9 +158,9 @@ public class ColorServiceTests
 
         await _repositoryMock.Received(1)
             .Update(Arg.Is<Color>(c =>
-                c.Red == 255 &&
-                c.Green == 0 &&
-                c.Blue == 0
+                c.Rgb.Red == 255 &&
+                c.Rgb.Green == 0 &&
+                c.Rgb.Blue == 0
             ));
     }
 
@@ -202,8 +202,9 @@ public class ColorServiceTests
     public async Task MergeColors_WhenIdsCountIsLessThanTwo_ShouldThrowValidationException()
     {
         //Arrange
-        var red = new Color("Red", 255, 0, 0); // cor criada
-        var colors = new List<Color> { red }; // lista de cores criadas
+        var red = new RgbColor(255, 0, 0); // cor criada
+        var color = new Color("Red", red);
+        var colors = new List<Color> { color }; // lista de cores criadas
 
         _repositoryMock.GetByIdsAsync(Arg.Any<List<string?>>()) // Quando o método GetByIdsAsync for chamado, retorne a lista de cores criada
         .Returns(colors); // Quando o método GetByIdsAsync for chamado, retorne a lista de cores criada
@@ -221,8 +222,9 @@ public class ColorServiceTests
     public async Task MergeColors_WhenIdIsDoesNotExist_ShouldThrowValidationException()
     {
         //Arrange
-        var red = new Color("Red", 255, 0, 0); // Cor criada
-        var colors = new List<Color> { red }; // Lista de cores, pois assim que está definido no service
+        var red = new RgbColor(255, 0, 0); // Cor criada
+        var color = new Color("Red", red);
+        var colors = new List<Color> { color }; // Lista de cores, pois assim que está definido no service
 
         _repositoryMock.GetByIdsAsync(Arg.Any<List<string?>>()) // Quando o método GetByIdsAsync for chamado, retorne a lista de cores criada
         .Returns(colors); // Quando o método GetByIdsAsync for chamado, retorne a lista de cores criada
@@ -240,9 +242,11 @@ public class ColorServiceTests
     public async Task MergeColors_AverageRgbCalculate_ShouldReturnAverageValues()
     {
         //Arrange
-        var red = new Color("Red", 255, 0, 0);
-        var green = new Color("Green", 0, 255, 0);
-        var colors = new List<Color> { red, green }; // Lista de cores criadas
+        var red = new RgbColor(255, 0, 0);
+        var color1 = new Color("Red", red);
+        var green = new RgbColor(0, 255, 0);
+        var color2 = new Color("Green", green);
+        var colors = new List<Color> { color1, color2 }; // Lista de cores criadas
 
         _repositoryMock.GetByIdsAsync(Arg.Any<List<string?>>())
         .Returns(colors); // Procurar os ids das cores criadas
@@ -262,17 +266,19 @@ public class ColorServiceTests
         var result = await _service.MergeColors(ids); // Chamada método de merge
 
         //Assert
-        result.Red.Should().Be(127); // valor esperado do red
-        result.Green.Should().Be(127); // valor esperado do green
+        result.Rgb.Red.Should().Be(127); // valor esperado do red
+        result.Rgb.Green.Should().Be(127); // valor esperado do green
     }
 
     [Fact]
     public async Task MergeColors_WhenColorsAreMerged_ShouldReturnMergedColor()
     {
         //Arrange
-        var red = new Color("Red", 255, 0, 0);
-        var blue = new Color("Blue", 0, 0, 255);
-        var colors = new List<Color> { red, blue }; // Lista de cores, pois assim que está definido no service
+        var red = new RgbColor(255, 0, 0);
+        var color1 = new Color("Red", red);
+        var blue = new RgbColor(0, 0, 255);
+        var color2 = new Color("Red", blue);
+        var colors = new List<Color> { color1, color2 }; // Lista de cores, pois assim que está definido no service
 
         _repositoryMock.GetByIdsAsync(Arg.Any<List<string?>>()) // Quando o método GetByIdsAsync for chamado, retorne a lista de cores criada
         .Returns(colors);

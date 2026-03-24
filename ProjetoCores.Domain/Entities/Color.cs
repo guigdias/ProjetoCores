@@ -9,26 +9,19 @@ public class Color
     [BsonRepresentation(BsonType.ObjectId)]
     public string? Id { get; private set; }
     public string Name { get; private set; }
-    public int Red { get; private set; }
-    public int Green { get; private set; }
-    public int Blue { get; private set; }
-    public double Cyan { get; private set; }
-    public double Magenta { get; private set; }
-    public double Yellow { get; private set; }
-    public double Key { get; private set; }
+    public RgbColor Rgb { get; private set; }
+    public CmykColor Cmyk { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime UpdatedAt { get; private set; }
     public bool IsMerged { get; private set; }
     public List<string> SourceColorsId { get; private set; } = new();
 
     // Construtor principal
-    public Color(string name, int red, int green, int blue)
+    public Color(string name, RgbColor rgb)
     {
         Name = name;
-        Red = red;
-        Green = green;
-        Blue = blue;
-        CalculateCmyk();
+        Rgb = rgb;
+        Cmyk = CmykColor.CalculateCmyk(rgb);
         CreatedAt = DateTime.UtcNow;
         UpdatedAt = DateTime.UtcNow;
         IsMerged = false;
@@ -37,9 +30,9 @@ public class Color
     // Método de criação
     public static Color CreateColorFromHex(string name, string hex)
     {
-        var rgb = ConvertHexToRgb(hex);
+        var rgb = RgbColor.ConvertHexToRgb(hex);
 
-        return new Color(name, rgb.Red, rgb.Green, rgb.Blue);
+        return new Color(name, rgb);
     }
 
     // Método para atualização
@@ -48,12 +41,10 @@ public class Color
         if (string.IsNullOrWhiteSpace(hex))
             throw new ArgumentException("Invalid Hex");
 
-        var rgb = ConvertHexToRgb(hex);
+        var rgb = RgbColor.ConvertHexToRgb(hex);
 
-        Red = rgb.Red;
-        Green = rgb.Green;
-        Blue = rgb.Blue;
-        CalculateCmyk();
+        Rgb = rgb;
+        Cmyk = CmykColor.CalculateCmyk(rgb);
         UpdatedAt = DateTime.UtcNow;
     }
     // Construtor da Cor Mesclada
@@ -61,11 +52,13 @@ public class Color
     public static Color CreateMergedColor(string name, IEnumerable<Color> sourceColors)
     {
         var colors = sourceColors.ToList();
-        var red = (int)colors.Average(c => c.Red);
-        var green = (int)colors.Average(c => c.Green);
-        var blue = (int)colors.Average(c => c.Blue);
+        var red = (int)colors.Average(c => c.Rgb.Red);
+        var green = (int)colors.Average(c => c.Rgb.Green);
+        var blue = (int)colors.Average(c => c.Rgb.Blue);
 
-        var mergedColor = new Color(name, red, green, blue)
+        var rgb = new RgbColor(red, green, blue);
+        
+        var mergedColor = new Color(name, rgb)
         {
             IsMerged = true
         };
@@ -77,37 +70,4 @@ public class Color
         return mergedColor;
     }
 
-    private void CalculateCmyk()
-    {
-        if (Red == 0 && Green == 0 && Blue == 0)
-        {
-            Cyan = 0;
-            Magenta = 0;
-            Yellow = 0;
-            Key = 1;
-            return;
-        }
-
-        double ConvertedRed = Red / 255.0;
-        double ConertedGreen = Green / 255.0;
-        double ConvertedBlue = Blue / 255.0;
-
-        Key = 1 - Math.Max(ConvertedRed, Math.Max(ConertedGreen, ConvertedBlue));
-        Cyan = Math.Round((1 - ConvertedRed - Key) / (1 - Key), 4);
-        Magenta = Math.Round((1 - ConertedGreen - Key) / (1 - Key), 4);
-        Yellow = Math.Round((1 - ConvertedBlue - Key) / (1 - Key), 4);
-    }
-
-    private static RgbColor ConvertHexToRgb(string hex)
-    {
-        hex = hex.Replace("#", ""); // substituir # por um espaço em branco
-
-        return new RgbColor
-        {
-           Red = Convert.ToInt32(hex.Substring(0, 2), 16),
-           Green = Convert.ToInt32(hex.Substring(2, 2), 16),
-           Blue = Convert.ToInt32(hex.Substring(4, 2), 16)
-        };
-
-    }
 }
