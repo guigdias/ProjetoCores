@@ -46,7 +46,7 @@ public class ColorController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(string id)
     {
-        var color = await _colorService.FindById(id);
+        var color = await _colorService.GetColorOrThrow(id);
         if (color == null)
             return NotFound();
 
@@ -78,10 +78,8 @@ public class ColorController : ControllerBase
 
         try
         {
-            var color = await _colorService.FindById(id);
-                if(color == null)
-                    return NotFound();
-
+            var color = await _colorService.GetColorOrThrow(id);
+            
             var dto = new UpdateColorDto
             {
                 Name = color.Name,

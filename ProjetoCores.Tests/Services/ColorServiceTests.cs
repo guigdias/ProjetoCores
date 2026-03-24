@@ -79,7 +79,7 @@ public class ColorServiceTests
         .Returns(color);
 
         //Act
-        var result = await _service.FindById("1");
+        var result = await _service.GetColorOrThrow("1");
 
         //Assert
         result.Should().NotBeNull();

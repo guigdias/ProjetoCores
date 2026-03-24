@@ -8,7 +8,6 @@ public class ColorService
 {
     private readonly IValidator<Color> _validator;
     private readonly IColorRepository _repository;
-
     public ColorService(IColorRepository repository, IValidator<Color> validator)
     {
         _repository = repository;
@@ -25,14 +24,12 @@ public class ColorService
         return color;
     }
     public Task<List<Color>> GetAll() => _repository.GetAll();
-
     public async Task<Color?> FindById(string id)
     {
         var color = await _repository.GetById(id);
       
         return color;
     }
-
     public async Task<Color> GetColorOrThrow(string id)
     {
         var color = await _repository.GetById(id);
@@ -49,11 +46,8 @@ public class ColorService
         color.UpdateColorFromHex(hex);
 
         await _repository.Update(color);
-
     }
-
     public Task<bool> Delete(string id) => _repository.Delete(id);
-
     public async Task<Color> MergeColors(List<string?> colorsIds)
     {
         var colors = await _repository.GetByIdsAsync(colorsIds);
