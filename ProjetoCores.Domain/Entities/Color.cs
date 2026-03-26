@@ -28,7 +28,7 @@ public class Color
     }
 
     // Método de criação
-    public static Color CreateColorFromHex(string name, string hex)
+    public static Color CreateColor(string name, string hex)
     {
         var rgb = RgbColor.ConvertHexToRgb(hex);
 

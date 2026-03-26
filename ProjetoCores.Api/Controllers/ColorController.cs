@@ -39,7 +39,7 @@ public class ColorController : ControllerBase
     {
         var colors = await _colorService.GetAll();
 
-        var response = _mapper.Map<IEnumerable<ColorResponseDto>>(colors);
+        var response = _mapper.Map<List<ColorResponseDto>>(colors);
 
         return Ok(response); // 200
     }

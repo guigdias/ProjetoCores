@@ -15,7 +15,7 @@ public class ColorService
     }
     public async Task<Color> Create(string name, string hex)
     {
-        var color = Color.CreateColorFromHex(name, hex);
+        var color = Color.CreateColor(name, hex);
 
         _validator.Validate(color);
 
