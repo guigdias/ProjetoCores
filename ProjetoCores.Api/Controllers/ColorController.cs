@@ -14,18 +14,20 @@ public class ColorController : ControllerBase
 {
     private readonly ColorService _colorService;
     private readonly IMapper _mapper;
+    private readonly IValidator<JsonPatchDocument<UpdateColorDto>> _patchValidator; // Adicionado 
 
-    public ColorController(ColorService colorService, IMapper mapper)
+    public ColorController(ColorService colorService, IMapper mapper, IValidator<JsonPatchDocument<UpdateColorDto>> patchValidator)
     {
         _colorService = colorService;
         _mapper = mapper;
+        _patchValidator = patchValidator;
     }
     [HttpPost]
     public async Task<IActionResult> Post([FromBody] CreateColorDto dto)
     {
         try
         {
-            var color = await _colorService.Create(dto.Name, dto.Hex);
+            var color = await _colorService.CreateColor(dto.Name, dto.Hex);
 
             return CreatedAtAction(nameof(GetById), new { id = color.Id }, _mapper.Map<ColorResponseDto>(color)); // 201
         }
@@ -43,14 +45,18 @@ public class ColorController : ControllerBase
 
         return Ok(response); // 200
     }
-    [HttpGet("{id}")]
+    [HttpGet("{id}")] // Correção no GetById
     public async Task<IActionResult> GetById(string id)
     {
-        var color = await _colorService.GetColorOrThrow(id);
-        if (color == null)
+        try
+        {
+            var color = await _colorService.GetColorOrThrow(id);
+            return Ok(_mapper.Map<ColorResponseDto>(color));
+        }
+        catch(NotFoundException)
+        {
             return NotFound();
-
-        return Ok(_mapper.Map<ColorResponseDto>(color));
+        }
     }
     [HttpPut("{id}")]
     public async Task <IActionResult> Put(string id, [FromBody] UpdateColorDto dto)
@@ -73,8 +79,10 @@ public class ColorController : ControllerBase
     [HttpPatch("{id}")]
     public async Task<IActionResult> Patch(string id, [FromBody] JsonPatchDocument<UpdateColorDto> patchDoc)
     {
-        if (patchDoc == null)
-            return BadRequest();
+        var validationResult = await _patchValidator.ValidateAsync(patchDoc);
+
+        if (!validationResult.IsValid)
+            return BadRequest(validationResult.Errors);
 
         try
         {

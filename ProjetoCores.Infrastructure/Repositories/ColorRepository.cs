@@ -19,21 +19,20 @@ public class ColorRepository : IColorRepository
     }
     public async Task<List<Color>> GetAll() // com <> pois possui retorno
     {
-        return await _collection.Find(_ => true) // filtro vazio = busca todos os documentos
-        .ToListAsync();
+        return await _collection.Find(c => c.Id != null)
+        .ToListAsync(); // Correção com verificação nula
     }
     public async Task<Color?> GetById(string id) // com <> pois possui retorno
     {
         return await _collection.Find(c => c.Id == id).FirstOrDefaultAsync(); // filtro com expressão lambda, para encontra pelo ID
     }
-    public async Task<Color?> GetByIdAsync(string id)
-    {
-        return await _collection.Find(c => c.Id == id).FirstOrDefaultAsync();
-    }
     public async Task<List<Color>> GetByIdsAsync(List<string?> ids)
     {
-        return await _collection.
-        Find(c => ids.Contains(c.Id))
+        if (ids == null || !ids.Any()) // Validação de lista nula
+            return new List<Color>();
+
+        return await _collection
+        .Find(c => ids.Contains(c.Id))
         .ToListAsync();
     }
     public async Task<bool> Update(Color color)
